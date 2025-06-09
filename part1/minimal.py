@@ -1,5 +1,7 @@
 # suppress warnings
 import warnings
+import os
+from datetime import datetime
 
 warnings.filterwarnings("ignore")
 
@@ -83,6 +85,29 @@ def read_conversation_from_file(file_path):
     except json.JSONDecodeError:
         raise ValueError(f"Invalid JSON format in file {file_path}")
 
+def save_summary(summary, source_info):
+    """Save the summary to a file in the results folder with timestamp."""
+    # Create results directory if it doesn't exist
+    results_dir = "part1/results"
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
+    
+    # Generate timestamp and filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{results_dir}/summary_{timestamp}.txt"
+    
+    # Prepare content with metadata
+    content = f"Summary generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+    content += f"Source: {source_info}\n"
+    content += "-" * 50 + "\n"
+    content += summary
+    
+    # Save to file
+    with open(filename, 'w') as f:
+        f.write(content)
+    
+    return filename
+
 async def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser()
@@ -100,11 +125,15 @@ async def main():
     if args.file:
         print(f"Reading conversation from file {args.file}...")
         conversation_data = read_conversation_from_file(args.file)
+        source_info = f"File: {args.file}"
     else:
         if not args.channel:
             raise ValueError("Either --file or --channel must be provided")
         print(f"Fetching conversation from Slack channel {args.channel}...")
         conversation_data = await fetch_slack_conversation(args.channel, args.thread, args.message_timestamp)
+        source_info = f"Slack Channel: {args.channel}"
+        if args.thread:
+            source_info += f" (Thread: {args.thread})"
     
     print(conversation_data)
 
@@ -122,8 +151,11 @@ async def main():
     # Print the summary
     print("-" * 50)
     print(summary)
-    # print(textwrap.fill(summary, width=80))
     print("-" * 50)
+    
+    # Save the summary
+    saved_file = save_summary(summary, source_info)
+    print(f"\nSummary saved to: {saved_file}")
 
 if __name__ == "__main__":
     asyncio.run(main())

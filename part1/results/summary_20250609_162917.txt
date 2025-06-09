@@ -1,0 +1,25 @@
+Summary generated at: 2025-06-09 16:29:17
+Source: File: generated_conversations/20250608_210657.json
+--------------------------------------------------
+Here is a summary of the conversation:
+
+**Key Points:**
+
+* A client is complaining about the new feature, specifically the workflow approval system, citing it's not user-friendly and causing frustration for their employees.
+* The team agrees that the feature may need to be revised, and that user testing with external users is necessary to better understand the issues.
+* A temporary solution is needed to address the client's immediate concerns, such as a guide or tutorial to help them navigate the new system.
+* The team decides to prioritize the guide and support for now, and then revisit the design and user testing once the immediate concerns are addressed.
+
+**Decisions Made:**
+
+* The team will provide a guide or tutorial to help the client navigate the new system.
+* The team will offer additional support or training to help the client get up to speed.
+* The team will prioritize the guide and support for now, and then revisit the design and user testing once the immediate concerns are addressed.
+* The team will keep each other updated on their progress and ensure they are all on the same page.
+
+**Tasks Assigned:**
+
+* Emily: Work on putting together a guide or tutorial to help the client navigate the new system.
+* Tom: Look into setting up some additional support or training for the client.
+* Josh: Keep an eye on the client's account and make sure they're not experiencing any other issues.
+* Sarah: Draft a response to the client, explaining the team's plan to address their concerns.
