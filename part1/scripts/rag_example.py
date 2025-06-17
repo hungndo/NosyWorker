@@ -90,7 +90,7 @@ def run_rag(data_dict: dict, prompt: str):
 
     # Combine context
     context = "\n\n".join(context_parts)
-    context = ""
+
     # Stage 5: Augment by running the LLM to generate an answer
     # ------------------------------------------------------------
     llm_prompt = f"""Answer the question based on the provided context documents.
@@ -141,16 +141,19 @@ if __name__ == "__main__":
 
     # Load dataset
     data_dict = {
-        "octopus_facts": "Octopuses have three hearts and blue blood. Two hearts pump blood to the gills, while the third pumps blood to the rest of the body. Their blood is blue because it contains copper-based hemocyanin instead of iron-based hemoglobin.",
-        "honey_facts": "Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible. This is because honey has natural antibacterial properties and very low water content.",
-        "space_facts": "A day on Venus is longer than its year. Venus takes 243 Earth days to rotate once on its axis, but only 225 Earth days to orbit the Sun. This means a Venusian day is longer than a Venusian year.",
-        "banana_facts": "Bananas are berries, but strawberries aren't. Botanically speaking, berries must have seeds inside their flesh. Bananas qualify, but strawberries have seeds on the outside, making them aggregate fruits.",
-        "shark_facts": "Sharks have been around longer than trees. Sharks first appeared around 400 million years ago, while the earliest trees appeared around 350 million years ago. This means sharks pre-date trees by about 50 million years.",
-        "penguin_facts": "Emperor penguins can hold their breath for over 20 minutes and dive to depths of over 500 meters while hunting for fish. They have special adaptations including collapsible lungs and the ability to slow their heart rate.",
-        "human_brain": "Your brain uses about 20% of your body's total energy despite being only 2% of your body weight. It consumes roughly 320 calories per day, which is equivalent to eating about 320 M&Ms.",
+        "project_kickoff": "Team discussed the launch of Project Phoenix. Key decisions made: using React for frontend, Node.js for backend, and MongoDB for database. Timeline set for 3 months with bi-weekly sprints. Team members assigned roles and responsibilities.",
+        "bug_fix_meeting": "Emergency meeting to address critical security vulnerability in authentication system. Team identified root cause in JWT token validation. Immediate fix deployed to production. Post-mortem scheduled for tomorrow to prevent similar issues.",
+        "design_review": "UX team presented new dashboard mockups. Feedback received on color scheme and navigation flow. Team agreed on dark mode implementation and simplified menu structure. Next iteration due in 2 weeks.",
+        "client_feedback": "Client reported issues with PDF export functionality. Team investigated and found memory leak in PDF generation process. Temporary workaround implemented while permanent fix is being developed. Client satisfied with quick response.",
+        "team_retrospective": "Monthly retrospective meeting held. Team celebrated successful deployment of new features. Areas for improvement identified: documentation needs updating, test coverage could be better. Action items assigned for next sprint.",
+        "infrastructure_update": "DevOps team announced migration to new cloud provider. Timeline shared: 2 weeks for preparation, 1 week for migration, 1 week for testing. Team members assigned specific responsibilities for smooth transition.",
+        "feature_planning": "Product team presented roadmap for Q3. New features planned: real-time collaboration, advanced analytics, and mobile app. Team discussed technical feasibility and resource requirements. Development to start next month.",
+        "performance_review": "Quarterly performance review meeting. Team members shared achievements and challenges. Training needs identified: cloud architecture and security best practices. Budget approved for team certifications.",
+        "integration_discussion": "Meeting with third-party API provider. Integration requirements discussed: OAuth2 authentication, rate limiting, and error handling. Technical documentation shared. Integration testing to begin next week.",
+        "release_planning": "Release 2.0 planning session. Features finalized: user roles, audit logging, and API versioning. Release date set for end of month. Team created detailed deployment checklist and rollback plan."
     }
 
-    question = "How many facts do I have in my database?"
+    question = "What are the issues our clients are having?"
     answer = run_rag(data_dict, question)
     print(f"\n🤖 Answer: {answer}\n")
     print("-" * 50)
