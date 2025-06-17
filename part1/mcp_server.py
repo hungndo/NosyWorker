@@ -35,16 +35,34 @@ def get_channel_history(channel_id: str, limit: int = 100, oldest: str = "", lat
         latest: End of time range of messages to include (Unix timestamp)
     """
     try:
-        params = {
-            "channel": channel_id,
-            "limit": limit
-        }
-        if oldest != "":
-            params["oldest"] = oldest
-        if latest != "":
-            params["latest"] = latest
-        response = bot_client.conversations_history(**params)
-
+        all_messages = []
+        cursor = None
+        
+        while True:
+            params = {
+                "channel": channel_id,
+                "limit": limit
+            }
+            if oldest != "":
+                params["oldest"] = oldest
+            if latest != "":
+                params["latest"] = latest
+            if cursor:
+                params["cursor"] = cursor
+                
+            response = bot_client.conversations_history(**params)
+            
+            # Add messages from this batch to our collection
+            if response.data.get("messages"):
+                all_messages.extend(response.data["messages"])
+            
+            # Check if there are more messages to fetch
+            cursor = response.data.get("response_metadata", {}).get("next_cursor")
+            if not cursor:
+                break
+                
+        # Create a new response object with all messages
+        response.data["messages"] = all_messages
         return {"result": response.data}
     except SlackApiError as e:
         logger.error(f"Error getting channel history: {e}")

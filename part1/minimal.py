@@ -39,7 +39,7 @@ async def fetch_slack_conversation(channel_id):
         
         return json.loads(result[0].text)
 
-def summarize_conversation(conversation, together_client, model="meta-llama/Meta-Llama-3-8B-Instruct-Lite"):
+async def summarize_conversation(conversation, together_client, model="meta-llama/Meta-Llama-3-8B-Instruct-Lite"):
     """Summarize the conversation using TogetherAI."""
     system_prompt = """
     Summary instructions:
@@ -124,7 +124,7 @@ async def main():
     # print(formatted_conversation)
     # Summarize the conversation
     print("\nSummarizing conversation...")
-    summary = summarize_conversation(str(conversation_data), together_client)
+    summary = await summarize_conversation(str(conversation_data), together_client)
     
     # Print the summary
     print("-" * 50)

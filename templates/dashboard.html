@@ -7,9 +7,37 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .slide-panel {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            width: 50%;
+            min-width: 640px;
+            visibility: hidden;
+        }
+        .slide-panel.open {
+            transform: translateX(0);
+            visibility: visible;
+            transition: transform 0.3s ease-in-out, visibility 0s;
+        }
+        .slide-panel.closing {
+            transform: translateX(100%);
+            visibility: hidden;
+            transition: transform 0s, visibility 0s;
+        }
+        .main-content {
+            transition: width 0.3s ease-in-out, margin-right 0.3s ease-in-out;
+            width: 100%;
+            margin-right: 0;
+        }
+        .main-content.squeezed {
+            width: 50%;
+            margin-right: 50%;
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="p-6">
+    <div class="p-6 main-content">
         <div class="max-w-6xl mx-auto space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
@@ -37,7 +65,7 @@
                     <div class="space-y-4">
                         {% for channel in channels %}
                         <div class="flex items-center justify-between p-4 border rounded-lg">
-                            <div class="flex items-center gap-4">
+                            <button onclick="openChannelPanel('{{ channel.id }}')" class="flex items-center gap-4 text-left hover:opacity-75 transition-opacity">
                                 <div class="flex items-center gap-3">
                                     {% if channel.type == "outlook" %}
                                     <i data-feather="mail" class="h-5 w-5 text-blue-600"></i>
@@ -53,9 +81,9 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </button>
                             <div class="flex items-center gap-3">
-                                <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md flex items-center gap-2" onclick="openChannelProfile('{{ channel.id }}')">
+                                <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md flex items-center gap-2" onclick="openProfileDialog('{{ channel.id }}', event)">
                                     <i data-feather="edit-3" class="h-4 w-4"></i>
                                     {{ "Edit Profile" if channel.profile else "Set Profile" }}
                                 </button>
@@ -68,14 +96,368 @@
         </div>
     </div>
 
+    <!-- Sliding Panel -->
+    <div id="channelPanel" class="slide-panel fixed top-0 right-0 h-full bg-white shadow-xl z-50">
+        <div class="h-full flex flex-col">
+            <div class="p-6 border-b">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold" id="panelTitle">Channel Details</h3>
+                    <button type="button" onclick="closeChannelPanel()" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <i data-feather="x" class="h-5 w-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-6">
+                    <div id="panelContent">
+                        <!-- Content will be dynamically populated -->
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="text-lg font-medium mb-4">Summarize Channel Activity</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Time Range</label>
+                                <select id="timeRange" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="1h">Last Hour</option>
+                                    <option value="24h">Last 24 Hours</option>
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d">Last 30 Days</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            <div id="customDateRange" class="hidden space-y-2">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input type="datetime-local" id="startDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input type="datetime-local" id="endDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <button onclick="summarizeChannel()" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center gap-2">
+                                <i data-feather="activity" class="h-4 w-4"></i>
+                                Summarize Activity
+                            </button>
+                            <div id="summaryContainer" class="hidden">
+                                <div class="mt-6 pt-6 border-t">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h4 class="text-lg font-medium text-gray-900">Summary</h4>
+                                        <button onclick="copySummary()" class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                                            <i data-feather="copy" class="h-4 w-4"></i>
+                                            Copy
+                                        </button>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <div id="summaryContent" class="prose prose-sm max-w-none"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Edit Dialog -->
+    <div id="profileDialog" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden z-50">
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                    <div class="absolute right-0 top-0 pr-4 pt-4">
+                        <button type="button" onclick="closeProfileDialog()" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <i data-feather="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                            <h3 class="text-lg font-semibold leading-6 text-gray-900 mb-4" id="dialogTitle">Edit Channel Profile</h3>
+                            <div id="dialogContent" class="space-y-4">
+                                <!-- Content will be dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="saveChannelProfile()" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto">
+                            Save Changes
+                        </button>
+                        <button type="button" onclick="closeProfileDialog()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize Feather icons
         feather.replace();
 
-        // Open channel profile function
-        function openChannelProfile(channelId) {
-            // Implement profile dialog functionality
-            console.log('Opening profile for channel:', channelId);
+        let currentChannelId = null;
+
+        // Open channel panel function
+        function openChannelPanel(channelId) {
+            currentChannelId = channelId;
+            const panel = document.getElementById('channelPanel');
+            const mainContent = document.querySelector('.main-content');
+            panel.classList.remove('closing');
+            panel.classList.add('open');
+            mainContent.classList.add('squeezed');
+            
+            // Hide and clear any existing summary
+            const summaryContainer = document.getElementById('summaryContainer');
+            summaryContainer.classList.add('hidden');
+            document.getElementById('summaryContent').innerHTML = '';
+            
+            // Fetch channel details and populate panel
+            fetch(`/api/channels/${channelId}/profile`)
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('panelContent');
+                    const channel = channels.find(c => c.id === channelId);
+                    document.getElementById('panelTitle').textContent = `${channel.name} Details`;
+                    
+                    if (data.profile) {
+                        content.innerHTML = `
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Target Audience</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3">${data.profile.audience}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data Sources</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3">${data.profile.dataSources}</textarea>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        content.innerHTML = `
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Target Audience</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3" placeholder="Describe the target audience..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data Sources</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3" placeholder="List the data sources..."></textarea>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    feather.replace();
+                });
+        }
+
+        // Close channel panel function
+        function closeChannelPanel() {
+            const panel = document.getElementById('channelPanel');
+            const mainContent = document.querySelector('.main-content');
+            panel.classList.remove('open');
+            panel.classList.add('closing');
+            mainContent.classList.remove('squeezed');
+            currentChannelId = null;
+            
+            // Hide and clear the summary
+            const summaryContainer = document.getElementById('summaryContainer');
+            summaryContainer.classList.add('hidden');
+            document.getElementById('summaryContent').innerHTML = '';
+        }
+
+        // Open profile dialog function
+        function openProfileDialog(channelId, event) {
+            event.stopPropagation(); // Prevent the channel panel from opening
+            currentChannelId = channelId;
+            const dialog = document.getElementById('profileDialog');
+            dialog.classList.remove('hidden');
+            
+            // Fetch channel details and populate dialog
+            fetch(`/api/channels/${channelId}/profile`)
+                .then(response => response.json())
+                .then(data => {
+                    const content = document.getElementById('dialogContent');
+                    const channel = channels.find(c => c.id === channelId);
+                    document.getElementById('dialogTitle').textContent = `Edit ${channel.name} Profile`;
+                    
+                    if (data.profile) {
+                        content.innerHTML = `
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Target Audience</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3">${data.profile.audience}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data Sources</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3">${data.profile.dataSources}</textarea>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        content.innerHTML = `
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Target Audience</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3" placeholder="Describe the target audience..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data Sources</label>
+                                    <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" rows="3" placeholder="List the data sources..."></textarea>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    feather.replace();
+                });
+        }
+
+        // Close profile dialog function
+        function closeProfileDialog() {
+            const dialog = document.getElementById('profileDialog');
+            dialog.classList.add('hidden');
+            currentChannelId = null;
+        }
+
+        // Save channel profile function
+        function saveChannelProfile() {
+            if (!currentChannelId) return;
+
+            const textareas = document.querySelectorAll('#dialogContent textarea');
+            const profile = {
+                audience: textareas[0].value,
+                dataSources: textareas[1].value
+            };
+
+            fetch(`/api/channels/${currentChannelId}/profile`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profile)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeProfileDialog();
+                    // Refresh the page to update the UI
+                    window.location.reload();
+                }
+            });
+        }
+
+        // Handle time range selection
+        document.getElementById('timeRange').addEventListener('change', function(e) {
+            const customRange = document.getElementById('customDateRange');
+            if (e.target.value === 'custom') {
+                customRange.classList.remove('hidden');
+            } else {
+                customRange.classList.add('hidden');
+            }
+        });
+
+        // Summarize channel function
+        function summarizeChannel() {
+            if (!currentChannelId) return;
+
+            const timeRange = document.getElementById('timeRange').value;
+            let startTime, endTime;
+
+            if (timeRange === 'custom') {
+                startTime = document.getElementById('startDate').value;
+                endTime = document.getElementById('endDate').value;
+                if (!startTime || !endTime) {
+                    alert('Please select both start and end dates');
+                    return;
+                }
+            } else {
+                const now = new Date();
+                endTime = now.toISOString();
+                
+                switch(timeRange) {
+                    case '1h':
+                        startTime = new Date(now - 60 * 60 * 1000).toISOString();
+                        break;
+                    case '24h':
+                        startTime = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+                        break;
+                    case '7d':
+                        startTime = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+                        break;
+                    case '30d':
+                        startTime = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+                        break;
+                }
+            }
+
+            // Show loading state
+            const summarizeBtn = document.querySelector('button[onclick="summarizeChannel()"]');
+            const originalText = summarizeBtn.innerHTML;
+            summarizeBtn.innerHTML = `
+                <i data-feather="loader" class="h-4 w-4 animate-spin"></i>
+                Summarizing...
+            `;
+            feather.replace();
+
+            // Call summarize API
+            fetch(`/api/channels/${currentChannelId}/summarize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    startTime,
+                    endTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const summaryContainer = document.getElementById('summaryContainer');
+                    const summaryContent = document.getElementById('summaryContent');
+                    
+                    // Show the summary container
+                    summaryContainer.classList.remove('hidden');
+                    
+                    // Format and display the summary
+                    summaryContent.innerHTML = data.summary.split('\n').map(line => 
+                        `<p class="mb-2">${line}</p>`
+                    ).join('');
+                    
+                    // Scroll the summary into view
+                    summaryContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    alert('Failed to generate summary: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Error generating summary: ' + error.message);
+            })
+            .finally(() => {
+                // Restore button state
+                summarizeBtn.innerHTML = originalText;
+                feather.replace();
+            });
+        }
+
+        // Copy summary to clipboard
+        function copySummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            const text = summaryContent.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const copyBtn = document.querySelector('button[onclick="copySummary()"]');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = `
+                    <i data-feather="check" class="h-4 w-4"></i>
+                    Copied!
+                `;
+                feather.replace();
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    feather.replace();
+                }, 2000);
+            });
         }
     </script>
 </body>

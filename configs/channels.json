@@ -8,7 +8,7 @@
                 "audience": "Customer Success Team",
                 "dataSources": ["Support Tickets", "Usage Analytics"]
             },
-            "channel_id": "C090VRNSP09"
+            "slack_channel_id": "C090VRNSP09"
         },
         {
             "id": "2",
@@ -23,7 +23,7 @@
             "id": "3",
             "name": "Engineering Updates",
             "type": "slack",
-            "channel_id": "C090VRNRT1P"
+            "slack_channel_id": "C090VRNRT1P"
         },
         {
             "id": "4",
