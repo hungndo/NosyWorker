@@ -1,4 +1,7 @@
-slack-bolt==1.18.0 
+slack-bolt==1.18.0
 fastmcp
 flask==3.0.0
 python-dotenv==1.0.0
+slack-sdk==3.26.1
+markdown2==2.4.12
+aiohttp==3.9.3
