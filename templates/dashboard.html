@@ -212,12 +212,13 @@
             document.getElementById('summaryContent').innerHTML = '';
             
             // Fetch channel details and populate panel
-            fetch(`/api/channels/${channelId}/profile`)
+            fetch(`/api/channels/${channelId}/profile`, {
+                method: 'GET'
+            })
                 .then(response => response.json())
                 .then(data => {
                     const content = document.getElementById('panelContent');
-                    const channel = channels.find(c => c.id === channelId);
-                    document.getElementById('panelTitle').textContent = `${channel.name} Details`;
+                    document.getElementById('panelTitle').textContent = `${data.name} Details`;
                     
                     if (data.profile) {
                         content.innerHTML = `
@@ -273,7 +274,9 @@
             dialog.classList.remove('hidden');
             
             // Fetch channel details and populate dialog
-            fetch(`/api/channels/${channelId}/profile`)
+            fetch(`/api/channels/${channelId}/profile`, {
+                method: 'GET'
+            })
                 .then(response => response.json())
                 .then(data => {
                     const content = document.getElementById('dialogContent');
