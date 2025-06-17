@@ -1,0 +1,28 @@
+Summary generated at: 2025-06-15 22:54:27
+Source: Slack Channel: C090VRNSP09
+--------------------------------------------------
+Here is a summary of the conversation:
+
+**Key Points:**
+
+* The team is discussing issues with the new workflow approval system, which is causing frustration for clients.
+* Emily suggests creating a guide or tutorial to help clients navigate the new system.
+* Sarah agrees and suggests offering additional support or training to help clients get up to speed.
+* Josh suggests prioritizing the guide and support for now, and then revisiting the design and user testing once the immediate concerns are addressed.
+* Kevin suggests doing more user testing with external users to get a better understanding of the issues.
+* Tom agrees and suggests revisiting the design to make some changes.
+
+**Decisions Made:**
+
+* The team will create a guide or tutorial to help clients navigate the new system.
+* The team will offer additional support or training to help clients get up to speed.
+* The team will prioritize the guide and support for now, and then revisit the design and user testing once the immediate concerns are addressed.
+* The team will do more user testing with external users to get a better understanding of the issues.
+
+**Tasks Assigned:**
+
+* Emily will work on creating a guide or tutorial to help clients navigate the new system.
+* Sarah will work on offering additional support or training to help clients get up to speed.
+* Josh will prioritize the guide and support for now, and then revisit the design and user testing once the immediate concerns are addressed.
+* Kevin will do more user testing with external users to get a better understanding of the issues.
+* Tom will revisit the design to make some changes.
