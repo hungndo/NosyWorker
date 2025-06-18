@@ -73,7 +73,7 @@ async def fetch_slack_conversation(channel_id, start_dt: str, end_dt: str):
         return conversation
 
 async def summarize_conversation(conversation, model="meta-llama/Meta-Llama-3-8B-Instruct-Lite"):
-    """Summarize the conversation using TogetherAI."""
+    """Summarize the conversation using TogetherAI and save to file."""
     system_prompt = """
     Summary instructions:
     - You are a helpful assistant that summarizes conversations in chat messages.
@@ -106,4 +106,14 @@ async def summarize_conversation(conversation, model="meta-llama/Meta-Llama-3-8B
         ],
     )
 
-    return response.choices[0].message.content 
+    summary = response.choices[0].message.content
+    
+    # Create timestamp for filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"outputs/summary_{timestamp}.md"
+    
+    # Save summary to file
+    with open(filename, 'w') as f:
+        f.write(summary)
+    
+    return summary 
