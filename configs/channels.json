@@ -12,12 +12,13 @@
         },
         {
             "id": "2",
-            "name": "sales@company.com",
+            "name": "Inbox",
             "type": "outlook",
             "profile": {
                 "audience": "Sales Team",
                 "dataSources": ["CRM Data", "Lead Scores"]
-            }
+            },
+            "outlook_folder": "inbox"
         },
         {
             "id": "3",
@@ -27,8 +28,9 @@
         },
         {
             "id": "4",
-            "name": "team@company.com",
-            "type": "outlook"
+            "name": "Internal",
+            "type": "outlook",
+            "outlook_folder": ""
         }
     ]
 } 

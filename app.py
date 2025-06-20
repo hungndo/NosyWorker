@@ -5,7 +5,8 @@ from services.channel_service import (
     load_channels,
     save_channels,
     fetch_slack_conversation,
-    summarize_conversation
+    summarize_conversation,
+    fetch_outlook_emails
 )
 
 app = Flask(__name__)
@@ -47,42 +48,63 @@ def update_channel_profile(channel_id):
 @app.route('/api/channels/<channel_id>/summarize', methods=['POST'])
 async def summarize_channel(channel_id):
     try:
-        # Find channel in config and get its slack_channel_id
+        # Find channel in config
         channel = None
         for ch in channels:
             if ch["id"] == channel_id:
                 channel = ch
                 break
-                
-        if not channel or "slack_channel_id" not in channel:
+        
+        if not channel:
             return jsonify({
                 "success": False,
-                "error": "Channel not found or not configured for Slack"
+                "error": "Channel not found"
             }), 404
 
         data = request.json
         start_time = data.get('startTime')
         end_time = data.get('endTime')
 
-        # Convert ISO timestamps to Unix timestamps
-        start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
-        end_dt = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
-        start_timestamp = int(start_dt.timestamp())
-        end_timestamp = int(end_dt.timestamp())
-
-        # Fetch conversation from Slack using the slack_channel_id
-        conversation = await fetch_slack_conversation(channel["slack_channel_id"], str(start_timestamp), str(end_timestamp))
-
-        # Generate summary
-        markdown_summary = await summarize_conversation(str(conversation))
-        
+        if channel["type"] == "slack":
+            if "slack_channel_id" not in channel:
+                return jsonify({
+                    "success": False,
+                    "error": "Channel not configured for Slack"
+                }), 404
+            # Convert ISO timestamps to Unix timestamps
+            start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+            start_timestamp = int(start_dt.timestamp())
+            end_timestamp = int(end_dt.timestamp())
+            # Fetch conversation from Slack
+            conversation = await fetch_slack_conversation(channel["slack_channel_id"], str(start_timestamp), str(end_timestamp))
+            # Generate summary
+            markdown_summary = await summarize_conversation(str(conversation))
+        elif channel["type"] == "outlook":
+            if "outlook_folder" not in channel or not channel["outlook_folder"]:
+                return jsonify({
+                    "success": False,
+                    "error": "Channel not configured for Outlook"
+                }), 404
+            # Fetch recent emails (e.g., 20 most recent)
+            emails = await fetch_outlook_emails(channel["outlook_folder"], 1)
+            # Format emails as a conversation string for summarization
+            conversation = ""
+            for email in emails:
+                conversation += f"From: {email['sender']} <{email['address']}>, Subject: {email['subject']}, Date: {email['receivedDateTime']}\n{email['body']}\n---\n"
+            # Generate summary
+            markdown_summary = await summarize_conversation(conversation)
+        else:
+            return jsonify({
+                "success": False,
+                "error": "Unsupported channel type"
+            }), 400
         # Convert markdown to HTML
         html_summary = markdown2.markdown(markdown_summary)
-        
         return jsonify({
             "success": True,
             "summary": html_summary,
-            "markdown_summary": markdown_summary  # Keep original markdown for reference
+            "markdown_summary": markdown_summary
         })
     except Exception as e:
         return jsonify({
