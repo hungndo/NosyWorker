@@ -6,8 +6,11 @@ from services.channel_service import (
     save_channels,
     fetch_slack_conversation,
     summarize_conversation,
-    fetch_outlook_emails
+    fetch_outlook_emails,
+    check_outlook_auth_status,
+    authenticate_outlook
 )
+import asyncio
 
 app = Flask(__name__)
 
@@ -111,6 +114,22 @@ async def summarize_channel(channel_id):
             "success": False,
             "error": str(e)
         }), 500
+
+@app.route('/api/outlook/auth-status', methods=['GET'])
+def outlook_auth_status():
+    try:
+        authenticated = asyncio.run(check_outlook_auth_status())
+        return jsonify({"success": True, "authenticated": authenticated})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/outlook/authenticate', methods=['POST'])
+def outlook_authenticate():
+    try:
+        auth_link = asyncio.run(authenticate_outlook())
+        return jsonify({"success": True, "auth_link": auth_link})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True)

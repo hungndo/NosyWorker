@@ -207,3 +207,33 @@ async def fetch_outlook_emails(folder_name: str, number_of_recent_emails) -> Lis
                         })
             print("[DEBUG] Exiting async with outlook_client block")
             return emails 
+
+async def check_outlook_auth_status() -> bool:
+    """
+    Check authentication status with the Outlook MCP server.
+    Returns True if authenticated, otherwise False.
+    """
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            try:
+                result = await session.call_tool('check-auth-status')
+                # The result is expected to be in result.content[0].text
+                status_text = result.content[0].text.strip()
+                return status_text == "Authenticated and ready"
+            except Exception as e:
+                print(f"[DEBUG] Exception in check-auth-status: {e}")
+                return False 
+
+async def authenticate_outlook() -> str:
+    """
+    Call the 'authenticate' tool from the Outlook MCP server and return the authentication link.
+    """
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            try:
+                await session.call_tool('authenticate')
+            except Exception as e:
+                print(f"[DEBUG] Exception in authenticate: {e}")
+            return "http://localhost:3333/auth?client_id=" 

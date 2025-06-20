@@ -1,3 +1,4 @@
+{% set outlook_channel_ids = [] %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,24 +65,33 @@
                 <div class="p-6">
                     <div class="space-y-4">
                         {% for channel in channels %}
+                        {% if channel.type == "outlook" %}{% set _ = outlook_channel_ids.append(channel.id) %}{% endif %}
                         <div class="flex items-center justify-between p-4 border rounded-lg">
-                            <button onclick="openChannelPanel('{{ channel.id }}')" class="flex items-center gap-4 text-left hover:opacity-75 transition-opacity">
-                                <div class="flex items-center gap-3">
-                                    {% if channel.type == "outlook" %}
-                                    <i data-feather="mail" class="h-5 w-5 text-blue-600"></i>
-                                    {% else %}
-                                    <i data-feather="message-square" class="h-5 w-5 text-green-600"></i>
-                                    {% endif %}
-                                    <div>
-                                        <p class="font-medium">{{ channel.name }}</p>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            <span class="px-2 py-1 text-xs rounded-full {% if channel.type == 'outlook' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
-                                                {{ channel.type|title }}
-                                            </span>
+                            <div class="flex items-center gap-3">
+                                <button onclick="openChannelPanel('{{ channel.id }}')" class="flex items-center gap-4 text-left hover:opacity-75 transition-opacity">
+                                    <div class="flex items-center gap-3">
+                                        {% if channel.type == "outlook" %}
+                                        <i data-feather="mail" class="h-5 w-5 text-blue-600"></i>
+                                        {% else %}
+                                        <i data-feather="message-square" class="h-5 w-5 text-green-600"></i>
+                                        {% endif %}
+                                        <div>
+                                            <p class="font-medium flex items-center gap-2">
+                                              {{ channel.name }}
+                                            </p>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="px-2 py-1 text-xs rounded-full {% if channel.type == 'outlook' %}bg-blue-100 text-blue-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                                    {{ channel.type|title }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </button>
+                                </button>
+                                {% if channel.type == "outlook" %}
+                                <span id="auth-status-{{ channel.id }}" class="ml-2 cursor-pointer" style="position: relative;"></span>
+                                <button id="auth-btn-{{ channel.id }}" class="ml-2 px-2 py-1 text-xs rounded bg-blue-500 text-white hover:bg-blue-600 hidden" onclick="authenticateOutlook(event, '{{ channel.id }}')">Authenticate</button>
+                                {% endif %}
+                            </div>
                             <div class="flex items-center gap-3">
                                 <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md flex items-center gap-2" onclick="openProfileDialog('{{ channel.id }}', event)">
                                     <i data-feather="edit-3" class="h-4 w-4"></i>
@@ -191,6 +201,7 @@
         </div>
     </div>
 
+    <script id="outlook-channel-ids" type="application/json">{{ outlook_channel_ids|tojson }}</script>
     <script>
         // Initialize Feather icons
         feather.replace();
@@ -461,6 +472,82 @@
                     feather.replace();
                 }, 2000);
             });
+        }
+
+        function updateAllOutlookAuthStatuses() {
+            const outlookChannelIds = JSON.parse(document.getElementById('outlook-channel-ids').textContent);
+            outlookChannelIds.forEach(function(channelId) {
+                fetch('/api/outlook/auth-status')
+                    .then(r => r.json())
+                    .then(data => {
+                        const el = document.getElementById('auth-status-' + channelId);
+                        const btn = document.getElementById('auth-btn-' + channelId);
+                        if (!el) return;
+                        let dot, statusText;
+                        if (data.success) {
+                            if (data.authenticated) {
+                                dot = '<span class="inline-block w-2 h-2 rounded-full bg-green-500 align-middle"></span>';
+                                statusText = 'Authenticated';
+                                if (btn) btn.classList.add('hidden');
+                            } else {
+                                dot = '<span class="inline-block w-2 h-2 rounded-full bg-red-500 align-middle"></span>';
+                                statusText = 'Not Authenticated';
+                                if (btn) btn.classList.remove('hidden');
+                            }
+                        } else {
+                            dot = '<span class="inline-block w-2 h-2 rounded-full bg-yellow-400 align-middle"></span>';
+                            statusText = 'Error checking auth';
+                            if (btn) btn.classList.remove('hidden');
+                        }
+                        el.innerHTML = dot;
+                        el.title = statusText;
+                    })
+                    .catch(() => {
+                        const el = document.getElementById('auth-status-' + channelId);
+                        const btn = document.getElementById('auth-btn-' + channelId);
+                        if (el) {
+                            el.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-yellow-400 align-middle"></span>';
+                            el.title = 'Error checking auth';
+                        }
+                        if (btn) btn.classList.remove('hidden');
+                    });
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            updateAllOutlookAuthStatuses();
+        });
+
+        function authenticateOutlook(event, channelId) {
+            event.stopPropagation();
+            const btn = document.getElementById('auth-btn-' + channelId);
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            fetch('/api/outlook/authenticate', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.auth_link) {
+                        const popup = window.open(data.auth_link, '_blank');
+                        if (popup) {
+                            const pollTimer = setInterval(function() {
+                                if (popup.closed) {
+                                    clearInterval(pollTimer);
+                                    // Update status for all Outlook channels
+                                    updateAllOutlookAuthStatuses();
+                                }
+                            }, 500);
+                        }
+                    } else {
+                        alert('Failed to get authentication link.');
+                    }
+                })
+                .catch(() => {
+                    alert('Failed to get authentication link.');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = 'Authenticate';
+                });
         }
     </script>
 </body>
