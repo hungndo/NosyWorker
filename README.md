@@ -37,7 +37,23 @@ git clone <repository-url>
 cd NosyWorker
 ```
 
-2. Create and activate a Conda environment:
+2. Clone the `outlook-mcp` repository and place it next to the `NosyWorker` folder:
+```bash
+cd ..
+git clone <outlook-mcp-repository-url>
+# Ensure the directory structure is:
+# ├── NosyWorker
+# └── outlook-mcp
+```
+
+3. Create a `.env` file in the `outlook-mcp` directory with your Outlook app credentials:
+```env
+# outlook-mcp/.env
+CLIENT_ID=your-client-id
+CLIENT_SECRET=your-client-secret
+```
+
+4. Create and activate a Conda environment:
 ```bash
 # Create a new conda environment
 conda create -n nosyworker python=3.10
@@ -46,7 +62,7 @@ conda create -n nosyworker python=3.10
 conda activate nosyworker
 ```
 
-3. Install the required dependencies:
+5. Install the required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -78,7 +94,18 @@ To make these environment variables persistent, you can add them to your shell's
 
 ## Running the Applications
 
-### 1. MCP Server
+### 1. Outlook Authentication Server
+
+Spin up the authentication server for Outlook integration:
+
+```bash
+cd ../outlook-mcp
+node outlook-auth-server.js
+```
+
+This will start the authentication server required for Outlook integration.
+
+### 2. MCP Server
 
 The MCP server provides Slack API integration and runs on port 8000.
 
@@ -88,7 +115,7 @@ python ./part1/mcp_server.py
 
 The server will start on `http://localhost:8000/mcp`
 
-### 2. Flask Application
+### 3. Flask Application
 
 The Flask application provides the web interface and runs on port 5000.
 
