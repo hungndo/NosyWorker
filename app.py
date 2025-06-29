@@ -39,6 +39,20 @@ def get_action_items():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route('/api/action-items-by-client', methods=['GET'])
+def get_action_items_by_client():
+    try:
+        # Look for the client-organized action items JSON file in part2 directory
+        action_items_path = os.path.join('part2', 'actions_by_client.json')
+        if os.path.exists(action_items_path):
+            with open(action_items_path, 'r') as f:
+                action_items = json.load(f)
+            return jsonify({"success": True, "action_items": action_items})
+        else:
+            return jsonify({"success": False, "error": "No client-organized action items found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 @app.route('/api/channels/<channel_id>/profile', methods=['GET'])
 def get_channel_profile(channel_id):
     for channel in channels:

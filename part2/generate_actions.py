@@ -5,6 +5,7 @@ from together import Together
 import re
 
 OUTPUTS_PATH = '../outputs'
+RESULTS_PATH = '../part1/results'
 MODEL = 'meta-llama/Meta-Llama-3-8B-Instruct-Lite'
 
 PROMPT = '''
@@ -21,9 +22,18 @@ JSON:
 '''
 
 def get_summary_files():
-    """Get all summary files from the outputs directory."""
-    pattern = os.path.join(OUTPUTS_PATH, 'summary_*.md')
-    return glob.glob(pattern)
+    """Get all summary files from the outputs directory and part1/results directory."""
+    # Get meeting summaries from outputs
+    outputs_pattern = os.path.join(OUTPUTS_PATH, 'summary_*.md')
+    outputs_files = glob.glob(outputs_pattern)
+    
+    # Get Slack conversation summaries from part1/results
+    results_pattern = os.path.join(RESULTS_PATH, 'summary_*.txt')
+    results_files = glob.glob(results_pattern)
+    
+    # Combine both lists
+    all_files = outputs_files + results_files
+    return all_files
 
 def process_summary(summary_path):
     """Process a single summary file and generate actions."""
@@ -72,7 +82,7 @@ def main():
     summary_files = get_summary_files()
     
     if not summary_files:
-        print("No summary files found in outputs directory.")
+        print("No summary files found in outputs or part1/results directories.")
         return
     
     print("Available summary files:")
