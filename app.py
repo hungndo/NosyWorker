@@ -1,6 +1,8 @@
 from flask import Flask, render_template, jsonify, request
 from datetime import datetime
 import markdown2
+import json
+import os
 from services.channel_service import (
     load_channels,
     save_channels,
@@ -22,6 +24,20 @@ def dashboard():
     return render_template('dashboard.html', 
                          channels=channels,
                          enabled_channels=channels)
+
+@app.route('/api/action-items', methods=['GET'])
+def get_action_items():
+    try:
+        # Look for the action items JSON file in part2 directory
+        action_items_path = os.path.join('part2', 'all_actions.json')
+        if os.path.exists(action_items_path):
+            with open(action_items_path, 'r') as f:
+                action_items = json.load(f)
+            return jsonify({"success": True, "action_items": action_items})
+        else:
+            return jsonify({"success": False, "error": "No action items found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
 
 @app.route('/api/channels/<channel_id>/profile', methods=['GET'])
 def get_channel_profile(channel_id):
@@ -130,6 +146,101 @@ def outlook_authenticate():
         return jsonify({"success": True, "auth_link": auth_link})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/send-action-email', methods=['POST'])
+async def send_action_email():
+    try:
+        data = request.json
+        to_email = data.get('to')
+        subject = data.get('subject')
+        message = data.get('message')
+        action = data.get('action')
+        
+        if not all([to_email, subject, message]):
+            return jsonify({"success": False, "error": "Missing required fields"}), 400
+        
+        # Use the existing MCP client to send email via Outlook
+        try:
+            # Import the MCP client functions
+            from mcp import ClientSession, StdioServerParameters
+            from mcp.client.stdio import stdio_client
+            
+            # Create MCP server parameters for Outlook with environment variables
+            outlook_mcp_script = '../outlook-mcp/index.js'
+            server_params = StdioServerParameters(
+                command="node",
+                args=[outlook_mcp_script],
+                env={
+                    'OUTLOOK_CLIENT_ID': 'dcb19bb8-79ea-4b1d-ac28-7c05ed3b4c0e',
+                    'OUTLOOK_CLIENT_SECRET': 'tvt8Q~~mj82y5VVOrsAV2F-Hs5i00PD1cUJcncld%'
+                },
+            )
+            
+            # Connect to Outlook MCP server and send email
+            async with stdio_client(server_params) as (read, write):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    
+                    # First check authentication status
+                    auth_result = await session.call_tool('check-auth-status', arguments={})
+                    if auth_result.content and len(auth_result.content) > 0:
+                        auth_status = auth_result.content[0].text
+                        if "Not authenticated" in auth_status:
+                            # Try to authenticate
+                            auth_response = await session.call_tool('authenticate', arguments={})
+                            if auth_response.content and len(auth_response.content) > 0:
+                                auth_text = auth_response.content[0].text
+                                if "Authentication required" in auth_text:
+                                    return jsonify({
+                                        "success": False,
+                                        "error": "Outlook authentication required. Please authenticate first.",
+                                        "auth_url": "http://localhost:3333/auth?client_id=dcb19bb8-79ea-4b1d-ac28-7c05ed3b4c0e"
+                                    }), 401
+                    
+                    # Call the send-email tool
+                    result = await session.call_tool('send-email', arguments={
+                        'to': to_email,
+                        'subject': subject,
+                        'body': message,
+                        'importance': 'normal',
+                        'saveToSentItems': True
+                    })
+                    
+                    # Check if email was sent successfully
+                    if result.content and len(result.content) > 0:
+                        response_text = result.content[0].text
+                        if "Email sent successfully" in response_text:
+                            return jsonify({
+                                "success": True,
+                                "message": "Email sent successfully via Outlook",
+                                "details": {
+                                    "to": to_email,
+                                    "subject": subject,
+                                    "action": action,
+                                    "outlook_response": response_text
+                                }
+                            })
+                        else:
+                            return jsonify({
+                                "success": False,
+                                "error": f"Outlook MCP error: {response_text}"
+                            }), 500
+                    else:
+                        return jsonify({
+                            "success": False,
+                            "error": "No response from Outlook MCP server"
+                        }), 500
+                        
+        except Exception as mcp_error:
+            print(f"MCP Error: {mcp_error}")
+            return jsonify({
+                "success": False,
+                "error": f"Failed to send email via Outlook MCP: {str(mcp_error)}"
+            }), 500
+        
+    except Exception as e:
+        print(f"General Error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

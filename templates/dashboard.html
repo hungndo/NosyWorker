@@ -103,6 +103,32 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Action Items Section -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-semibold">Customer Success Action Items</h2>
+                            <p class="text-gray-600 mt-1">Actionable items generated from meeting summaries to improve client satisfaction</p>
+                        </div>
+                        <button onclick="refreshActionItems()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center gap-2 hover:bg-blue-700">
+                            <i data-feather="refresh-cw" class="h-4 w-4"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="actionItemsContainer" class="space-y-6">
+                        <div class="flex items-center justify-center py-8">
+                            <div class="text-center">
+                                <i data-feather="loader" class="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin"></i>
+                                <p class="text-gray-500">Loading action items...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -193,6 +219,53 @@
                             Save Changes
                         </button>
                         <button type="button" onclick="closeProfileDialog()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Action Dialog -->
+    <div id="emailActionDialog" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden z-50">
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
+                    <div class="absolute right-0 top-0 pr-4 pt-4">
+                        <button type="button" onclick="closeEmailActionDialog()" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <i data-feather="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                            <h3 class="text-lg font-semibold leading-6 text-gray-900 mb-4">Take Action - Send Email</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Action Item</label>
+                                    <div id="actionItemDisplay" class="bg-gray-50 rounded-md p-3 text-sm text-gray-900"></div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">To</label>
+                                    <input type="email" id="emailTo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="recipient@example.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                    <input type="text" id="emailSubject" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Action Item Follow-up">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                    <textarea id="emailMessage" rows="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Compose your message here..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                        <button type="button" onclick="sendActionEmail()" class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto">
+                            <i data-feather="send" class="h-4 w-4 mr-2"></i>
+                            Send Email
+                        </button>
+                        <button type="button" onclick="closeEmailActionDialog()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
                             Cancel
                         </button>
                     </div>
@@ -516,6 +589,7 @@
 
         window.addEventListener('DOMContentLoaded', function() {
             updateAllOutlookAuthStatuses();
+            loadActionItems();
         });
 
         function authenticateOutlook(event, channelId) {
@@ -548,6 +622,219 @@
                     btn.disabled = false;
                     btn.textContent = 'Authenticate';
                 });
+        }
+
+        // Load action items from the API
+        function loadActionItems() {
+            fetch('/api/action-items')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('actionItemsContainer');
+                    
+                    if (data.success && data.action_items) {
+                        displayActionItems(data.action_items);
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-8">
+                                <i data-feather="alert-circle" class="h-12 w-12 text-gray-400 mx-auto mb-4"></i>
+                                <p class="text-gray-500 mb-2">No action items found</p>
+                                <p class="text-sm text-gray-400">Run the action generation script to create action items from meeting summaries</p>
+                            </div>
+                        `;
+                        feather.replace();
+                    }
+                })
+                .catch(error => {
+                    const container = document.getElementById('actionItemsContainer');
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <i data-feather="alert-triangle" class="h-12 w-12 text-red-400 mx-auto mb-4"></i>
+                            <p class="text-red-500 mb-2">Error loading action items</p>
+                            <p class="text-sm text-gray-400">${error.message}</p>
+                        </div>
+                    `;
+                    feather.replace();
+                });
+        }
+
+        // Display action items in the container
+        function displayActionItems(actionItems) {
+            const container = document.getElementById('actionItemsContainer');
+            
+            if (Object.keys(actionItems).length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-feather="inbox" class="h-12 w-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-500">No action items available</p>
+                    </div>
+                `;
+                feather.replace();
+                return;
+            }
+
+            let html = '';
+            
+            for (const [summaryFile, actions] of Object.entries(actionItems)) {
+                html += `
+                    <div class="border rounded-lg p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">${summaryFile.replace('.md', '')}</h3>
+                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">${actions.length} actions</span>
+                        </div>
+                        <div class="space-y-4">
+                `;
+                
+                actions.forEach((action, index) => {
+                    html += `
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                    ${index + 1}
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium text-gray-900 mb-2">${action.action}</h4>
+                                    <p class="text-sm text-gray-600 mb-3">${action.reasoning}</p>
+                                    <button onclick="takeAction('${action.action.replace(/'/g, "\\'")}', '${summaryFile}')" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 flex items-center gap-2">
+                                        <i data-feather="mail" class="h-4 w-4"></i>
+                                        Take Action
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            feather.replace();
+        }
+
+        // Refresh action items
+        function refreshActionItems() {
+            const container = document.getElementById('actionItemsContainer');
+            container.innerHTML = `
+                <div class="flex items-center justify-center py-8">
+                    <div class="text-center">
+                        <i data-feather="loader" class="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin"></i>
+                        <p class="text-gray-500">Refreshing action items...</p>
+                    </div>
+                </div>
+            `;
+            feather.replace();
+            
+            setTimeout(() => {
+                loadActionItems();
+            }, 500);
+        }
+
+        // Take action function - opens email dialog
+        function takeAction(actionText, summaryFile) {
+            const dialog = document.getElementById('emailActionDialog');
+            const actionDisplay = document.getElementById('actionItemDisplay');
+            const subjectField = document.getElementById('emailSubject');
+            const messageField = document.getElementById('emailMessage');
+            
+            // Display the action item
+            actionDisplay.textContent = actionText;
+            
+            // Pre-fill subject and message
+            subjectField.value = `Action Item: ${actionText.substring(0, 50)}${actionText.length > 50 ? '...' : ''}`;
+            
+            const defaultMessage = `Hi,
+
+I'm following up on the action item from our recent meeting:
+
+${actionText}
+
+Please let me know if you need any clarification or have questions about this action item.
+
+Best regards,
+[Your Name]`;
+            
+            messageField.value = defaultMessage;
+            
+            // Show the dialog
+            dialog.classList.remove('hidden');
+            feather.replace();
+        }
+
+        // Close email action dialog
+        function closeEmailActionDialog() {
+            const dialog = document.getElementById('emailActionDialog');
+            dialog.classList.add('hidden');
+            
+            // Clear the form
+            document.getElementById('emailTo').value = '';
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailMessage').value = '';
+            document.getElementById('actionItemDisplay').textContent = '';
+        }
+
+        // Send action email
+        function sendActionEmail() {
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+            const action = document.getElementById('actionItemDisplay').textContent;
+            
+            if (!to || !subject || !message) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Show loading state
+            const sendBtn = document.querySelector('button[onclick="sendActionEmail()"]');
+            const originalText = sendBtn.innerHTML;
+            sendBtn.innerHTML = `
+                <i data-feather="loader" class="h-4 w-4 mr-2 animate-spin"></i>
+                Sending...
+            `;
+            sendBtn.disabled = true;
+            feather.replace();
+            
+            // Send email via API
+            fetch('/api/send-action-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: to,
+                    subject: subject,
+                    message: message,
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email sent successfully!');
+                    closeEmailActionDialog();
+                } else if (response.status === 401 && data.auth_url) {
+                    // Authentication required
+                    const authConfirmed = confirm('Outlook authentication required. Would you like to authenticate now?');
+                    if (authConfirmed) {
+                        window.open(data.auth_url, '_blank');
+                        alert('Please complete the authentication in the new window, then try sending the email again.');
+                    }
+                } else {
+                    alert('Failed to send email: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                alert('Error sending email: ' + error.message);
+            })
+            .finally(() => {
+                // Restore button state
+                sendBtn.innerHTML = originalText;
+                sendBtn.disabled = false;
+                feather.replace();
+            });
         }
     </script>
 </body>

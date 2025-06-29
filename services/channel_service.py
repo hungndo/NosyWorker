@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 from fastmcp import Client
-from fastmcp.client.transports import StreamableHttpTransport, StdioTransport
+from fastmcp.client.transports import SSETransport, StdioTransport
 from together import Together
 from typing import List, Dict, Optional
 from mcp import ClientSession, StdioServerParameters, types
@@ -11,7 +11,7 @@ from mcp.client.stdio import stdio_client
 
 # Create the transport with your MCP server URL
 server_url = "http://0.0.0.0:8000/mcp"
-transport = StreamableHttpTransport(server_url)
+transport = SSETransport(server_url)
 
 # Initialize the client with the transport
 client = Client(transport=transport)
