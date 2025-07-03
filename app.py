@@ -231,5 +231,22 @@ def refresh_action_items():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/api/save-summary', methods=['POST'])
+def save_summary():
+    try:
+        data = request.json
+        summary = data.get('summary')
+        if not summary:
+            return jsonify({'success': False, 'error': 'Missing summary'}), 400
+        # Create timestamp for filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"outputs/summary_{timestamp}.md"
+        # Save summary to file
+        with open(filename, 'w') as f:
+            f.write(summary)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

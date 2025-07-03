@@ -131,6 +131,7 @@
             </div>
 
             <!-- Action Items Section -->
+            {#
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b">
                     <div class="flex items-center justify-between">
@@ -155,6 +156,7 @@
                     </div>
                 </div>
             </div>
+            #}
         </div>
     </div>
 
@@ -212,6 +214,17 @@
                                     </div>
                                     <div class="bg-gray-50 rounded-lg p-4">
                                         <div id="summaryContent" class="prose prose-sm max-w-none"></div>
+                                    </div>
+                                    <!-- Save/Dismiss options -->
+                                    <div id="saveSummaryOptions" class="mt-4 flex gap-4 hidden">
+                                        <button id="saveSummaryBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+                                            <i data-feather="save" class="h-4 w-4"></i>
+                                            Save Summary for Action Generation
+                                        </button>
+                                        <button id="dismissSummaryBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 flex items-center gap-2">
+                                            <i data-feather="x-circle" class="h-4 w-4"></i>
+                                            Dismiss
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -536,8 +549,18 @@
                         `<p class="mb-2">${line}</p>`
                     ).join('');
                     
+                    // Show save/dismiss options
+                    const saveOptions = document.getElementById('saveSummaryOptions');
+                    saveOptions.classList.remove('hidden');
+                    // Store summary and metadata for saving
+                    saveOptions.dataset.summary = data.markdown_summary;
+                    saveOptions.dataset.html = data.summary;
+                    saveOptions.dataset.startTime = startTime;
+                    saveOptions.dataset.endTime = endTime;
+                    saveOptions.dataset.channelId = currentChannelId;
                     // Scroll the summary into view
                     summaryContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    feather.replace();
                 } else {
                     alert('Failed to generate summary: ' + (data.error || 'Unknown error'));
                 }
@@ -1150,6 +1173,62 @@ Best regards,
             loadActionItems();
             loadClientActionItems();
         });
+
+        // Add event listeners for save/dismiss buttons
+        if (!window._saveSummaryListenersAdded) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const saveBtn = document.getElementById('saveSummaryBtn');
+                const dismissBtn = document.getElementById('dismissSummaryBtn');
+                if (saveBtn && dismissBtn) {
+                    saveBtn.addEventListener('click', function() {
+                        const saveOptions = document.getElementById('saveSummaryOptions');
+                        const summary = saveOptions.dataset.summary;
+                        const html = saveOptions.dataset.html;
+                        const startTime = saveOptions.dataset.startTime;
+                        const endTime = saveOptions.dataset.endTime;
+                        const channelId = saveOptions.dataset.channelId;
+                        saveBtn.disabled = true;
+                        saveBtn.innerHTML = '<i data-feather="loader" class="h-4 w-4 animate-spin"></i> Saving...';
+                        fetch('/api/save-summary', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                channelId,
+                                startTime,
+                                endTime,
+                                summary,
+                                html
+                            })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                saveBtn.innerHTML = '<i data-feather="check" class="h-4 w-4"></i> Saved!';
+                                setTimeout(() => {
+                                    document.getElementById('saveSummaryOptions').classList.add('hidden');
+                                    saveBtn.innerHTML = '<i data-feather="save" class="h-4 w-4"></i> Save Summary for Action Generation';
+                                    saveBtn.disabled = false;
+                                    feather.replace();
+                                }, 1500);
+                            } else {
+                                saveBtn.innerHTML = '<i data-feather="alert-circle" class="h-4 w-4"></i> Error';
+                                saveBtn.disabled = false;
+                                feather.replace();
+                            }
+                        })
+                        .catch(() => {
+                            saveBtn.innerHTML = '<i data-feather="alert-circle" class="h-4 w-4"></i> Error';
+                            saveBtn.disabled = false;
+                            feather.replace();
+                        });
+                    });
+                    dismissBtn.addEventListener('click', function() {
+                        document.getElementById('saveSummaryOptions').classList.add('hidden');
+                    });
+                }
+                window._saveSummaryListenersAdded = true;
+            });
+        }
     </script>
 </body>
 </html> 

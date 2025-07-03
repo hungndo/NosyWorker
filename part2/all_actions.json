@@ -1,118 +1,118 @@
 {
+  "summary_20250702_222214.md": [
+    {
+      "action": "Send a follow-up email to confirm the client has updated their security info",
+      "reasoning": "It is essential to ensure the client's security info is accurate and up-to-date to prevent potential account issues and verify their identity",
+      "priority": "high",
+      "category": "communication",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250702_222214.md",
+      "generated_at": "2025-07-03T13:08:04.075130"
+    },
+    {
+      "action": "Provide additional training on managing security notification settings",
+      "reasoning": "Offering training on security notification settings will empower the client to take control of their account security, reducing the likelihood of issues and improving their overall experience",
+      "priority": "medium",
+      "category": "training",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250702_222214.md",
+      "generated_at": "2025-07-03T13:08:04.075141"
+    },
+    {
+      "action": "Review and update internal documentation on security info best practices",
+      "reasoning": "Updating internal documentation will ensure the customer success team is equipped with the most current information to support clients effectively, ultimately enhancing client satisfaction and account retention",
+      "priority": "low",
+      "category": "documentation",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250702_222214.md",
+      "generated_at": "2025-07-03T13:08:04.075143"
+    }
+  ],
   "summary_20250618_090337.md": [
     {
-      "action": "Create a temporary solution or workaround for the client's immediate needs",
-      "reasoning": "The client is experiencing frustration and disruption due to the new feature, and a temporary solution or workaround is needed to alleviate their concerns. This will show that the team is proactive and committed to resolving the issue.",
+      "action": "Create a comprehensive guide or tutorial for the new workflow approval system",
+      "reasoning": "A guide or tutorial will help the client's employees navigate the new system, reducing frustration and increasing adoption rates. This is a high-priority task as it directly addresses the client's immediate concerns.",
+      "priority": "high",
+      "category": "documentation",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250618_090337.md",
+      "generated_at": "2025-07-03T13:08:06.604532"
+    },
+    {
+      "action": "Provide temporary support or training to alleviate the client's frustration with the new feature",
+      "reasoning": "Offering temporary support or training will help mitigate the client's frustration and demonstrate the team's commitment to their success. This is a high-priority task as it helps to maintain a positive relationship with the client.",
       "priority": "high",
       "category": "support",
       "client": "TechCorp Solutions",
       "source_file": "summary_20250618_090337.md",
-      "generated_at": "2025-06-29T14:38:36.647841"
+      "generated_at": "2025-07-03T13:08:06.604542"
     },
     {
-      "action": "Develop a comprehensive guide or tutorial to help the client's employees navigate the new workflow approval system",
-      "reasoning": "The client's employees are struggling to use the new feature, and a clear guide or tutorial is needed to help them understand how to use it effectively. This will improve the client's overall experience and reduce frustration.",
+      "action": "Conduct user testing with external users to identify and address usability issues with the new workflow approval system",
+      "reasoning": "User testing with external users will provide valuable feedback on the system's usability, allowing the team to make data-driven design improvements. This is a medium-priority task as it is essential for long-term client satisfaction, but can be revisited after the immediate concerns are addressed.",
+      "priority": "medium",
+      "category": "design",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250618_090337.md",
+      "generated_at": "2025-07-03T13:08:06.604545"
+    }
+  ],
+  "summary_20250621_114817.md": [
+    {
+      "action": "Remove unauthorized apps from the account",
+      "reasoning": "To ensure the security and integrity of the client's data, it is crucial to remove any apps that were not explicitly granted access, thereby preventing potential data breaches.",
+      "priority": "high",
+      "category": "support",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250621_114817.md",
+      "generated_at": "2025-07-03T13:08:09.065604"
+    },
+    {
+      "action": "Opt out or adjust security notification settings",
+      "reasoning": "Tailoring security notification settings to the client's preferences will help reduce unnecessary notifications and improve their overall experience with the account, leading to increased satisfaction.",
+      "priority": "medium",
+      "category": "communication",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250621_114817.md",
+      "generated_at": "2025-07-03T13:08:09.065615"
+    },
+    {
+      "action": "Conduct a review of account permissions and connected apps",
+      "reasoning": "Regularly reviewing account permissions and connected apps will help identify and mitigate potential security risks, demonstrating a proactive approach to client success and account security.",
+      "priority": "high",
+      "category": "support",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250621_114817.md",
+      "generated_at": "2025-07-03T13:08:09.065617"
+    }
+  ],
+  "summary_20250703_130751.md": [
+    {
+      "action": "Create a comprehensive guide or tutorial for the new workflow approval system",
+      "reasoning": "This is important for client satisfaction as it directly addresses the client's concern about the feature being not user-friendly, providing them with a clear resource to understand and navigate the system.",
+      "priority": "high",
+      "category": "documentation",
+      "client": "TechCorp Solutions",
+      "source_file": "summary_20250703_130751.md",
+      "generated_at": "2025-07-03T13:08:11.158451"
+    },
+    {
+      "action": "Offer additional support or training sessions for the client to get familiar with the new system",
+      "reasoning": "Providing extra support or training is crucial for client satisfaction and retention, as it shows the company's commitment to the client's success and helps mitigate frustration with the new feature.",
       "priority": "high",
       "category": "training",
       "client": "TechCorp Solutions",
-      "source_file": "summary_20250618_090337.md",
-      "generated_at": "2025-06-29T14:38:36.647862"
+      "source_file": "summary_20250703_130751.md",
+      "generated_at": "2025-07-03T13:08:11.158463"
     },
     {
-      "action": "Conduct user testing with external users to gather feedback and improve the design of the workflow approval system",
-      "reasoning": "The team's internal testing was biased, and external user testing is needed to gather a more diverse range of feedback. This will help improve the design of the feature and ensure it meets the needs of all users.",
-      "priority": "medium",
-      "category": "design",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250618_090337.md",
-      "generated_at": "2025-06-29T14:38:36.647867"
-    }
-  ],
-  "summary_20250609_162917.txt": [
-    {
-      "action": "Create a comprehensive guide or tutorial to help the client navigate the new system",
-      "reasoning": "This will address the client's immediate concerns and provide a temporary solution to the workflow approval system's usability issues. It's important for client satisfaction and account retention to ensure the client can effectively use the new feature.",
+      "action": "Draft a transparent and timely response to the client, outlining the steps being taken to address their concerns",
+      "reasoning": "Communicating promptly and transparently with the client is vital for maintaining trust and demonstrating that their concerns are being heard and acted upon, which is essential for account retention and overall client experience.",
       "priority": "high",
-      "category": "support",
+      "category": "communication",
       "client": "TechCorp Solutions",
-      "source_file": "summary_20250609_162917.txt",
-      "generated_at": "2025-06-29T14:38:39.755708"
-    },
-    {
-      "action": "Offer additional support or training to help the client get up to speed with the new system",
-      "reasoning": "This will provide the client with the necessary resources to successfully implement the new feature and reduce frustration. It's important for client satisfaction and account retention to ensure the client has the support they need to succeed.",
-      "priority": "high",
-      "category": "support",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250609_162917.txt",
-      "generated_at": "2025-06-29T14:38:39.755736"
-    },
-    {
-      "action": "Revisit the design and user testing of the workflow approval system to identify and address usability issues",
-      "reasoning": "This will ensure that the feature is user-friendly and meets the client's needs. It's important for client satisfaction and account retention to ensure the feature is effective and efficient for the client's employees.",
-      "priority": "medium",
-      "category": "design",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250609_162917.txt",
-      "generated_at": "2025-06-29T14:38:39.755740"
-    }
-  ],
-  "summary_20250615_225427.txt": [
-    {
-      "action": "Create a guide or tutorial to help clients navigate the new workflow approval system",
-      "reasoning": "This will help clients quickly understand how to use the new system, reducing frustration and improving their overall experience. As a high-priority action, it will also help to address the immediate concerns and get clients up to speed as soon as possible.",
-      "priority": "high",
-      "category": "support",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250615_225427.txt",
-      "generated_at": "2025-06-29T14:38:42.749781"
-    },
-    {
-      "action": "Offer additional support or training to help clients get up to speed with the new system",
-      "reasoning": "This will provide clients with the resources they need to successfully use the new system, and will help to build trust and confidence in the product. By offering support or training, we can also identify and address any potential issues or concerns early on.",
-      "priority": "medium",
-      "category": "support",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250615_225427.txt",
-      "generated_at": "2025-06-29T14:38:42.749813"
-    },
-    {
-      "action": "Conduct user testing with external users to gather feedback and improve the design",
-      "reasoning": "This will help us to better understand the issues and concerns that clients are experiencing, and will allow us to make targeted improvements to the design. By involving external users in the testing process, we can also ensure that the design is user-friendly and meets the needs of a wider range of clients.",
-      "priority": "low",
-      "category": "design",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250615_225427.txt",
-      "generated_at": "2025-06-29T14:38:42.749816"
-    }
-  ],
-  "summary_20250615_225218.txt": [
-    {
-      "action": "Schedule a follow-up call to discuss implementation details",
-      "reasoning": "To ensure a smooth onboarding process and address any concerns the client may have, it's crucial to schedule a follow-up call to discuss implementation details. This will also demonstrate our commitment to their success and provide an opportunity to build trust.",
-      "priority": "High",
-      "category": "Support",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250615_225218.txt",
-      "generated_at": "2025-06-29T14:38:45.254287"
-    },
-    {
-      "action": "Provide additional resources and documentation on product features",
-      "reasoning": "To help the client get the most out of our product, it's essential to provide additional resources and documentation on product features. This will enable them to quickly find the information they need and reduce the likelihood of confusion or frustration.",
-      "priority": "Medium",
-      "category": "Documentation",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250615_225218.txt",
-      "generated_at": "2025-06-29T14:38:45.254309"
-    },
-    {
-      "action": "Assign a dedicated account manager to oversee the client's account",
-      "reasoning": "To ensure a high level of service and attention to the client's needs, it's vital to assign a dedicated account manager to oversee their account. This will provide a single point of contact and ensure that their concerns are addressed promptly and efficiently.",
-      "priority": "High",
-      "category": "Support",
-      "client": "TechCorp Solutions",
-      "source_file": "summary_20250615_225218.txt",
-      "generated_at": "2025-06-29T14:38:45.254316"
+      "source_file": "summary_20250703_130751.md",
+      "generated_at": "2025-07-03T13:08:11.158474"
     }
   ]
 }

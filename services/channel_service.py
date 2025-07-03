@@ -126,14 +126,6 @@ async def summarize_conversation(conversation, model="meta-llama/Llama-3.3-70B-I
         print(e)
     summary = response.choices[0].message.content
     
-    # Create timestamp for filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"outputs/summary_{timestamp}.md"
-    
-    # Save summary to file
-    with open(filename, 'w') as f:
-        f.write(summary)
-    
     return summary 
 
 async def fetch_outlook_emails(folder_name: str, number_of_recent_emails) -> List[Dict]:
