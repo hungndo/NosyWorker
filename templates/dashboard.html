@@ -104,32 +104,6 @@
                 </div>
             </div>
 
-            <!-- Action Items Section -->
-            <div class="bg-white rounded-lg shadow">
-                <div class="p-6 border-b">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-xl font-semibold">Customer Success Action Items</h2>
-                            <p class="text-gray-600 mt-1">Actionable items generated from meeting summaries to improve client satisfaction</p>
-                        </div>
-                        <button onclick="refreshActionItems()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center gap-2 hover:bg-blue-700">
-                            <i data-feather="refresh-cw" class="h-4 w-4"></i>
-                            Refresh
-                        </button>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div id="actionItemsContainer" class="space-y-6">
-                        <div class="flex items-center justify-center py-8">
-                            <div class="text-center">
-                                <i data-feather="loader" class="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin"></i>
-                                <p class="text-gray-500">Loading action items...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Client-Organized Action Items Section -->
             <div class="bg-white rounded-lg shadow">
                 <div class="p-6 border-b">
@@ -150,6 +124,32 @@
                             <div class="text-center">
                                 <i data-feather="loader" class="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin"></i>
                                 <p class="text-gray-500">Loading client action items...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Items Section -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-semibold">Customer Success Action Items</h2>
+                            <p class="text-gray-600 mt-1">Actionable items generated from meeting summaries to improve client satisfaction</p>
+                        </div>
+                        <button onclick="refreshActionItems()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm flex items-center gap-2 hover:bg-blue-700">
+                            <i data-feather="refresh-cw" class="h-4 w-4"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="actionItemsContainer" class="space-y-6">
+                        <div class="flex items-center justify-center py-8">
+                            <div class="text-center">
+                                <i data-feather="loader" class="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin"></i>
+                                <p class="text-gray-500">Loading action items...</p>
                             </div>
                         </div>
                     </div>
@@ -818,10 +818,20 @@
                 </div>
             `;
             feather.replace();
-            
-            setTimeout(() => {
-                loadActionItems();
-            }, 500);
+
+            fetch('/api/refresh-action-items', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Failed to refresh action items: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error refreshing action items: ' + error.message);
+                })
+                .finally(() => {
+                    loadActionItems();
+                });
         }
 
         // Take action function - opens email dialog
@@ -1118,10 +1128,20 @@ Best regards,
                 </div>
             `;
             feather.replace();
-            
-            setTimeout(() => {
-                loadClientActionItems();
-            }, 500);
+
+            fetch('/api/refresh-action-items', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Failed to refresh client action items: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('Error refreshing client action items: ' + error.message);
+                })
+                .finally(() => {
+                    loadClientActionItems();
+                });
         }
 
         // Update the window load event to also load client action items

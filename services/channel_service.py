@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 from fastmcp import Client
-from fastmcp.client.transports import SSETransport, StdioTransport
+from fastmcp.client.transports import StreamableHttpTransport, StdioTransport
 from together import Together
 from typing import List, Dict, Optional
 from mcp import ClientSession, StdioServerParameters, types
@@ -11,7 +11,7 @@ from mcp.client.stdio import stdio_client
 
 # Create the transport with your MCP server URL
 server_url = "http://0.0.0.0:8000/mcp"
-transport = SSETransport(server_url)
+transport = StreamableHttpTransport(server_url)
 
 # Initialize the client with the transport
 client = Client(transport=transport)
@@ -41,14 +41,17 @@ async def fetch_slack_conversation(channel_id, start_dt: str, end_dt: str):
     """Fetch messages from a Slack channel or thread."""
     async with client:
         # Fetch channel messages
-        result = await client.call_tool(
-            "get_channel_history",
-            {
-                "channel_id": channel_id,
-                "oldest": start_dt,
-                "latest": end_dt
-            }
-        )
+        try:
+            result = await client.call_tool(
+                "get_channel_history",
+                {
+                    "channel_id": channel_id,
+                    "oldest": start_dt,
+                    "latest": end_dt
+                }
+            )
+        except Exception as e:
+            print(e)
         
         # Parse the raw response
         raw_response = json.loads(result[0].text).get('result', {})
@@ -84,7 +87,7 @@ async def fetch_slack_conversation(channel_id, start_dt: str, end_dt: str):
         
         return conversation
 
-async def summarize_conversation(conversation, model="meta-llama/Meta-Llama-3-8B-Instruct-Lite"):
+async def summarize_conversation(conversation, model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"):
     """Summarize the conversation using TogetherAI and save to file."""
     system_prompt = """
     Summary instructions:
@@ -93,31 +96,34 @@ async def summarize_conversation(conversation, model="meta-llama/Meta-Llama-3-8B
     - Focus and list out key points, decisions made, and tasks assigned.
     - Present the summary in a nice Markdown format.
     - The format of the output should be:
-    ** Key Points **
+    **Key Points**
     * key point 1
     * key point 2
     * ...
 
-    ** Decisions Made **
+    **Decisions Made**
     * decision 1
     * decision 2
     * ...
 
-    ** Tasks Assigned **
+    **Tasks Assigned**
     * task assignment 1
     * task assignment 2
     * ...
     
     """
-
-    response = together_client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": conversation}
-        ],
-    )
-    print("bye")
+    try:
+        print(f"[DEBUG] System prompt: {system_prompt}")
+        print(f"[DEBUG] Conversation: {conversation}")
+        response = together_client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": conversation}
+            ],
+        )
+    except Exception as e:
+        print(e)
     summary = response.choices[0].message.content
     
     # Create timestamp for filename
@@ -237,3 +243,20 @@ async def authenticate_outlook() -> str:
             except Exception as e:
                 print(f"[DEBUG] Exception in authenticate: {e}")
             return "http://localhost:3333/auth?client_id=" 
+        
+async def send_outlook_email(to_email, subject, message):
+
+    # Connect to Outlook MCP server and send email
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize() 
+            # Call the send-email tool
+            result = await session.call_tool('send-email', arguments={
+                'to': to_email,
+                'subject': subject,
+                'body': message,
+                'importance': 'normal',
+                'saveToSentItems': True
+            })
+
+            return result

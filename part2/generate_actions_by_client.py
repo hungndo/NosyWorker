@@ -5,9 +5,9 @@ from together import Together
 import re
 from datetime import datetime
 
-OUTPUTS_PATH = '../outputs'
+OUTPUTS_PATH = './outputs'
 RESULTS_PATH = '../part1/results'
-MODEL = 'meta-llama/Meta-Llama-3-8B-Instruct-Lite'
+MODEL = 'meta-llama/Llama-3.3-70B-Instruct-Turbo'#'meta-llama/Meta-Llama-3-8B-Instruct-Lite'
 
 # Client mapping - you can update this based on your actual client names
 CLIENT_MAPPING = {
@@ -63,11 +63,11 @@ def get_summary_files():
     outputs_files = glob.glob(outputs_pattern)
     
     # Get Slack conversation summaries from part1/results
-    results_pattern = os.path.join(RESULTS_PATH, 'summary_*.txt')
-    results_files = glob.glob(results_pattern)
+    # results_pattern = os.path.join(RESULTS_PATH, 'summary_*.txt')
+    # results_files = glob.glob(results_pattern)
     
     # Combine both lists
-    all_files = outputs_files + results_files
+    all_files = outputs_files #+ results_files
     return all_files
 
 def process_summary(summary_path):
@@ -204,13 +204,13 @@ def main():
     # Save both formats
     if all_results:
         # Save original format
-        output_file = 'all_actions.json'
+        output_file = './part2/all_actions.json'
         with open(output_file, 'w') as f:
             json.dump(all_results, f, indent=2)
         print(f"\nAll actions saved to {output_file}")
         
         # Save client-organized format
-        client_output_file = 'actions_by_client.json'
+        client_output_file = './part2/actions_by_client.json'
         with open(client_output_file, 'w') as f:
             json.dump(client_organization, f, indent=2)
         print(f"Client-organized actions saved to {client_output_file}")
